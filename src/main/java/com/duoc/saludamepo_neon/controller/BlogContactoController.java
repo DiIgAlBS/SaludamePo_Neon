@@ -36,6 +36,19 @@ public class BlogContactoController {
         return ResponseEntity.status(HttpStatus.CREATED).body(blogRepository.save(blog));
     }
 
+    @PutMapping("/blogs/{id}")
+    @Operation(summary = "Actualizar noticia del blog (Solo ADMIN)")
+    public ResponseEntity<?> actualizarBlog(@PathVariable Long id, @Valid @RequestBody Blog datos) {
+        return blogRepository.findById(id).map(existente -> {
+            existente.setTitulo(datos.getTitulo());
+            existente.setCategoria(datos.getCategoria());
+            existente.setResumen(datos.getResumen());
+            existente.setContenido(datos.getContenido());
+            existente.setImagenUrl(datos.getImagenUrl());
+            return ResponseEntity.ok(blogRepository.save(existente));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/blogs/{id}")
     @Operation(summary = "Eliminar noticia del blog (Solo ADMIN)")
     public ResponseEntity<?> eliminarBlog(@PathVariable Long id) {
@@ -55,5 +68,14 @@ public class BlogContactoController {
     @Operation(summary = "Listar mensajes recibidos (Solo ADMIN)")
     public List<MensajeContacto> listarMensajes() {
         return contactoRepository.findAllByOrderByFechaEnvioDesc();
+    }
+
+    @PutMapping("/contacto/{id}/leido")
+    @Operation(summary = "Marcar mensaje de contacto como leído (Solo ADMIN)")
+    public ResponseEntity<?> marcarLeido(@PathVariable Long id) {
+        return contactoRepository.findById(id).map(msg -> {
+            msg.setLeido(true);
+            return ResponseEntity.ok(contactoRepository.save(msg));
+        }).orElse(ResponseEntity.notFound().build());
     }
 }
